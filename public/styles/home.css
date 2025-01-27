@@ -1,0 +1,104 @@
+
+#select_section h2{
+    font-size: 20px;
+    font-weight: 700;
+    margin-top: 40px;
+}
+
+#select_gender_container{
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+    width: 100%;
+    gap: 50px;
+}
+.gender_btn{
+    margin: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+    flex-direction: column;
+    border: none;
+    border-radius: 10px;
+    padding: 10px;
+}
+
+.gender_btn img{
+    width: 100px;
+    border: none;
+}
+.gender_btn:hover{
+    cursor: pointer;
+}
+
+.active_gender{
+    background-color: lightblue;
+    box-shadow: 0px 0pc 5px yellowgreen;
+}
+
+#start_chat_container{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+    width: 100%;
+}
+
+#start_chat_btn{
+    padding: 10px 20px;
+    border: none;
+    border-radius: 10px;
+    background-color: lightblue;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+#start_chat_btn:hover{
+    color: blue;
+    border: 1px solid blue;
+}
+
+#home_section{
+    width: 100%;
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+    flex-direction: row;
+}
+
+#home_section section{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    width: 45%;
+    border: 1px solid lightgray;
+    height: 35vw;
+}
+
+#camera_notification{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 10px;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+#camera_notification button{
+    padding: 10px 20px;
+    border: none;
+    border-radius: 10px;
+    background-color: lightblue;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+#camera_notification button:hover{
+    color: blue;
+    border: 1px solid blue;
+}
