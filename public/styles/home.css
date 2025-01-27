@@ -30,11 +30,12 @@
 }
 .gender_btn:hover{
     cursor: pointer;
+    background-color: lightblue;
 }
 
 .active_gender{
     background-color: lightblue;
-    box-shadow: 0px 0pc 5px yellowgreen;
+    box-shadow: 0px 0pc 5px blue;
 }
 
 #start_chat_container{
@@ -101,4 +102,45 @@
 #camera_notification button:hover{
     color: blue;
     border: 1px solid blue;
+}
+
+#identify_gender_screen{
+    display: none;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 30px;
+}
+
+#identify_gender_screen p{
+    width: 80%;
+    font-size: 12px;
+}
+
+#identify_gender_screen p span{
+    font-size: 12px;
+    font-weight: 700;
+    color: red;
+}
+
+#identify_gender_screen img{
+    width: 200px;
+    border: none;
+}
+
+#loading_next_screen{
+    display: none;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 10px;
+}
+
+#loading_next_screen img{
+    width: 50px;
+    border: none;
+}
+
+#video_random{
+    display: none;
 }

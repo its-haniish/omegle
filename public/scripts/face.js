@@ -22,7 +22,6 @@ femaleGenderBtn.addEventListener("click", () => {
 });
 
 // camera feed logic
-
 const enableCameraBtn = document.getElementById('enable_camera_btn');
 const videoElement = document.getElementById('video');
 const cameraNotification = document.getElementById('camera_notification');
