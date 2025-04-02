@@ -74,9 +74,11 @@ async function detectGender() {
       socket.emit("gender_detected", { gender: detections.gender, probability: detections.genderProbability });
       document.getElementById("identify_gender_screen").style.display="none";
       document.getElementById("loading_next_screen").style.display="flex";
-
+      socket.emit("join_chat");
       genderDetected=true; // Stop further emissions
       clearInterval(interval); // Stop the setInterval
+      // **Create WebRTC Offer**
+      await createAndSendOffer();
     } else {
       console.log("No face detected. Adjust position.");
     }

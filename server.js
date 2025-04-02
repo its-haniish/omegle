@@ -22,7 +22,7 @@ app.get('/', (req, res) => {
 // Socket.io
 io.on('connection', (socket) => {
     console.log('A user connected');
-    users.push({ id: socket.id, gender: null });
+    users.push({ id: socket.id, gender: null, waiting: true, partnerId: null, offer: null });
     console.log(`Users connected: ${users.length}`);
 
     socket.on("gender_detected", (data) => {
@@ -36,9 +36,50 @@ io.on('connection', (socket) => {
         }
     });
 
+    socket.on("join_chat", (data) => {
+        let user = users.find(user => user.id === socket.id);
+        if (user) {
+            user.offer = data.offer; // Save the offer from frontend
+    
+            // Find a waiting user without a partner
+            let partner = users.find(u => u.waiting && u.partnerId === null && u.id !== socket.id);
+    
+            if (partner) {
+                // Pair users
+                user.partnerId = partner.id;
+                partner.partnerId = user.id;
+                user.waiting = false;
+                partner.waiting = false;
+    
+                // Send match info and offer to the partner
+                io.to(user.id).emit("match_found", { partnerId: partner.id });
+                io.to(partner.id).emit("match_found", { partnerId: user.id, offer: user.offer });
+    
+                console.log(`Matched ${user.id} with ${partner.id}`);
+            } else {
+                // No partner found, keep waiting
+                user.waiting = true;
+            }
+        }
+    });
+    
+
     socket.on('disconnect', () => {
         console.log('A user disconnected');
-        users=users.filter(user => user.id!==socket.id);
+        let user = users.find(user => user.id === socket.id);
+        if (user) {
+            let partnerId = user.partnerId;
+            if (partnerId) {
+                let partner = users.find(u => u.id === partnerId);
+                if (partner) {
+                    partner.partnerId = null;
+                    partner.waiting = true;
+                    io.to(partner.id).emit("partner_disconnected");
+                }
+            }
+        }
+
+        users = users.filter(user => user.id !== socket.id);
     });
 });
 

@@ -144,3 +144,7 @@
 #video_random{
     display: none;
 }
+
+#video{
+    transform: scaleX(-1);
+}
