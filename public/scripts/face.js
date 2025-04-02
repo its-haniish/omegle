@@ -3,6 +3,7 @@ const maleGenderBtn=document.getElementById("male_gender_btn");
 const femaleGenderImg=document.getElementById("female_gender_img");
 const femaleGenderBtn=document.getElementById("female_gender_btn");
 
+
 let selectedGender="male";
 let cameraStream=null; // Store the camera stream
 
@@ -23,30 +24,30 @@ femaleGenderBtn.addEventListener("click", () => {
 });
 
 // Camera feed logic
-const enableCameraBtn=document.getElementById('enable_camera_btn');
+// const enableCameraBtn=document.getElementById('enable_camera_btn');
 const videoElement=document.getElementById('video');
 const cameraNotification=document.getElementById('camera_notification');
 
-async function startCamera() {
-  if (!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia) {
-    alert('Camera not supported by this browser.');
-    return;
-  }
+// async function startCamera() {
+//   if (!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia) {
+//     alert('Camera not supported by this browser.');
+//     return;
+//   }
 
-  try {
-    cameraStream=await navigator.mediaDevices.getUserMedia({ video: true });
-    videoElement.srcObject=cameraStream;
-    cameraNotification.style.display='none';
-    videoElement.style.width='100%';
-  } catch (err) {
-    console.error("Error accessing the camera: ", err);
-    alert("Unable to access camera. Check permissions.");
-  }
-}
+//   try {
+//     localStream=await navigator.mediaDevices.getUserMedia({ video: true });
+//     videoElement.srcObject=localStream;
+//     cameraNotification.style.display='none';
+//     videoElement.style.width='100%';
+//   } catch (err) {
+//     console.error("Error accessing the camera: ", err);
+//     alert("Unable to access camera. Check permissions.");
+//   }
+// }
 
-enableCameraBtn.addEventListener('click', async () => {
-  await startCamera();
-});
+// enableCameraBtn.addEventListener('click', async () => {
+//   await startCamera();
+// });
 
 const startChatBtn=document.getElementById('start_chat_btn');
 
@@ -58,7 +59,7 @@ startChatBtn.addEventListener('click', async () => {
     faceapi.nets.ageGenderNet.loadFromUri('/models')
   ]);
 
-  await startCamera(); // Ensure camera is started
+  // await startCamera(); // Ensure camera is started
   detectGender();
 });
 

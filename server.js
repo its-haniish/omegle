@@ -23,67 +23,73 @@ app.get('/', (req, res) => {
 io.on('connection', (socket) => {
     console.log('A user connected');
     users.push({ id: socket.id, gender: null, waiting: true, partnerId: null, offer: null });
-    console.log(`Users connected: ${users.length}`);
 
     socket.on("gender_detected", (data) => {
-        console.log("Received detected gender:", data.gender);
-
-        // Update the gender of the user with the matching socket ID
-        let user=users.find(user => user.id===socket.id);
+        let user=users.find(u => u.id===socket.id);
         if (user) {
             user.gender=data.gender;
-            console.log(`Updated gender for user ${socket.id}: ${data.gender}`);
+            console.log(`Updated gender for ${socket.id}: ${data.gender}`);
         }
     });
 
     socket.on("join_chat", (data) => {
-        let user = users.find(user => user.id === socket.id);
+        if (!data) {
+            console.error("Error: Received invalid offer.");
+            return;
+        }
+
+        let user=users.find(u => u.id===socket.id);
         if (user) {
-            user.offer = data.offer; // Save the offer from frontend
-    
-            // Find a waiting user without a partner
-            let partner = users.find(u => u.waiting && u.partnerId === null && u.id !== socket.id);
-    
+            user.offer=data.offer;
+
+            let partner=users.find(u => u.waiting&&u.partnerId===null&&u.id!==socket.id&&u.gender!==null);
             if (partner) {
-                // Pair users
-                user.partnerId = partner.id;
-                partner.partnerId = user.id;
-                user.waiting = false;
-                partner.waiting = false;
-    
-                // Send match info and offer to the partner
-                io.to(user.id).emit("match_found", { partnerId: partner.id });
+                user.partnerId=partner.id;
+                partner.partnerId=user.id;
+                user.waiting=false;
+                partner.waiting=false;
+
+                io.to(user.id).emit("match_found", { partnerId: partner.id, offer: partner.offer });
                 io.to(partner.id).emit("match_found", { partnerId: user.id, offer: user.offer });
-    
+
                 console.log(`Matched ${user.id} with ${partner.id}`);
             } else {
-                // No partner found, keep waiting
-                user.waiting = true;
+                user.waiting=true;
             }
         }
     });
-    
+
+    socket.on("ice_candidate", (data) => {
+        let user=users.find(u => u.id===socket.id);
+        if (user&&user.partnerId) {
+            io.to(user.partnerId).emit("ice_candidate", data);
+        }
+    });
+
+    socket.on("signal", (data) => {
+
+        let user=users.find(u => u.id===socket.id);
+        if (user&&user.partnerId) {
+            io.to(user.partnerId).emit("signal", data);
+        }
+    });
 
     socket.on('disconnect', () => {
-        console.log('A user disconnected');
-        let user = users.find(user => user.id === socket.id);
+        console.log(`User disconnected: ${socket.id}`);
+        let user=users.find(u => u.id===socket.id);
         if (user) {
-            let partnerId = user.partnerId;
-            if (partnerId) {
-                let partner = users.find(u => u.id === partnerId);
-                if (partner) {
-                    partner.partnerId = null;
-                    partner.waiting = true;
-                    io.to(partner.id).emit("partner_disconnected");
-                }
+            let partner=users.find(u => u.id===user.partnerId);
+            if (partner) {
+                partner.partnerId=null;
+                partner.waiting=true;
+                io.to(partner.id).emit("partner_disconnected");
             }
         }
-
-        users = users.filter(user => user.id !== socket.id);
+        users=users.filter(u => u.id!==socket.id);
     });
 });
 
 // Start the server
 server.listen(PORT, () => {
-    console.log(`The server is live at: http://localhost:${PORT}`);
+    console.log(`Server running at: http://localhost:${PORT}`);
 });

@@ -1,64 +1,131 @@
 const socket=io();
-let peer;
-const localVideo=document.getElementById('video');
-const remoteVideo=document.getElementById('video_random');
-const config = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
+let peerConnection;
+let localStream;
+let iceCandidateQueue=[]; // Queue for ICE candidates before remote description is set
 
-// Function to create an RTC PeerConnection and send an offer
-async function createAndSendOffer() {
-  peerConnection = new RTCPeerConnection(config);
+// 🔹 Get video elements
+const localVideo=document.getElementById("video");
+const remoteVideo=document.getElementById("video_random");
+const loadingScreen=document.getElementById("loading_next_screen");
 
-  // Add local stream to connection
-  localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+// 🔹 WebRTC configuration
+const config={
+    iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+};
 
-  // Create Offer
-  const offer = await peerConnection.createOffer();
-  await peerConnection.setLocalDescription(offer);
-
-  // Send Offer in `join_chat` event
-  socket.emit("join_chat", { offer });
+// ✅ Function to get camera/microphone access
+async function getMedia() {
+    try {
+        localStream=await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        localVideo.srcObject=localStream;
+        console.log("✅ Local stream initialized.");
+    } catch (error) {
+        console.error("❌ Error accessing media devices:", error);
+    }
 }
 
-socket.on("match_found", async (data) => {
-    peerConnection = new RTCPeerConnection(config);
+// ✅ Function to create and send an offer
+async function createAndSendOffer() {
+    if (!localStream) {
+        console.error("No localStream available!");
+        return;
+    }
 
-    // Add local stream to connection
+    peerConnection=new RTCPeerConnection(config);
     localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
 
-    // Handle remote stream
-    peerConnection.ontrack = (event) => {
-        remoteVideo.srcObject = event.streams[0];
+    peerConnection.ontrack=(event) => {
+        console.log("🎥 Received remote stream:", event.streams[0]);
+        remoteVideo.srcObject=event.streams[0];
     };
 
-    // Handle ICE candidate exchange
-    peerConnection.onicecandidate = (event) => {
+    peerConnection.onicecandidate=(event) => {
         if (event.candidate) {
             socket.emit("signal", { candidate: event.candidate });
         }
     };
 
-    // ✅ **If offer exists, accept it and send an answer**
+    const offer=await peerConnection.createOffer();
+    await peerConnection.setLocalDescription(offer);
+    socket.emit("join_chat", { offer });
+}
+
+// ✅ Handle match found event
+socket.on("match_found", async (data) => {
+    peerConnection=new RTCPeerConnection(config);
+    localStream.getTracks().forEach((track) => peerConnection.addTrack(track, localStream));
+
+    loadingScreen.style.display="none";
+    remoteVideo.style.display="block";
+
+    if (!peerConnection.ontrack) {
+        peerConnection.ontrack=(event) => {
+            if (remoteVideo.srcObject!==event.streams[0]) {
+                console.log("🎥 Received remote stream:", event.streams[0]);
+                remoteVideo.srcObject=event.streams[0];
+                remoteVideo.play(); // Ensure playback starts
+            }
+        };
+    }
+
+
+    peerConnection.onicecandidate=(event) => {
+        if (event.candidate) {
+            socket.emit("signal", { candidate: event.candidate });
+        }
+    };
+
     if (data.offer) {
-        await peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
-        let answer = await peerConnection.createAnswer();
-        await peerConnection.setLocalDescription(answer);
-        socket.emit("signal", { answer }); // Send answer back to the original offer sender
+        console.log("🎯 Setting Remote Offer:", data.offer);
+
+        if (peerConnection.signalingState!=="stable") {
+            console.warn("⚠ Skipping setRemoteDescription: Invalid state", peerConnection.signalingState);
+            return;
+        }
+
+        try {
+            await peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
+            console.log("✅ Remote Offer Set Successfully");
+
+            // Process queued ICE candidates
+            while (iceCandidateQueue.length) {
+                let candidate=iceCandidateQueue.shift();
+                peerConnection.addIceCandidate(candidate);
+            }
+
+            let answer=await peerConnection.createAnswer();
+            await peerConnection.setLocalDescription(answer);
+            socket.emit("signal", { answer });
+        } catch (error) {
+            console.error("❌ Error processing offer:", error);
+        }
     }
 });
 
-
-// ✅ Handle incoming signals (ICE candidates & answers)
+// ✅ Handle signaling (ICE candidates & answers)
 socket.on("signal", async (data) => {
     if (data.answer) {
-        await peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
+        if (peerConnection.signalingState==="have-local-offer") {
+            await peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
+        } else {
+            console.warn("⚠ Skipping setRemoteDescription: Invalid state", peerConnection.signalingState);
+        }
     } else if (data.candidate) {
-        await peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
+        if (peerConnection.remoteDescription) {
+            await peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
+        } else {
+            console.warn("Queuing ICE candidate, waiting for remote description");
+            iceCandidateQueue.push(new RTCIceCandidate(data.candidate));
+        }
     }
 });
 
-// Handle disconnection
+// ✅ Handle disconnection
 socket.on("partner_disconnected", () => {
     alert("Your partner has disconnected.");
-    peerConnection.close();
-    window.location.reload();
+    document.getElementById("loading_next_screen").style.display="flex";
+    if (peerConnection) peerConnection.close();
 });
+
+// ✅ Initialize media on page load
+getMedia();
