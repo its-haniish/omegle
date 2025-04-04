@@ -100,6 +100,7 @@ const checkLocalData=() => {
 
   const parsedData=JSON.parse(data);
   console.log("📝 Found data in local storage:", parsedData);
+  loadingScreen.style.display="flex"
 
   // If gender detection previously failed, show Start Chat button
   if (!parsedData.gender) {
