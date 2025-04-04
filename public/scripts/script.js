@@ -39,10 +39,22 @@ function resetConnection() {
     }
 
     if (remoteVideo.srcObject) {
-        remoteVideo.srcObject.getTracks().forEach(track => track.stop());
+        remoteVideo.srcObject.getTracks().forEach(track => {
+            track.stop(); // Stop each track properly
+        });
         remoteVideo.srcObject=null;
     }
+
+    if (localStream) {
+        localStream.getTracks().forEach(track => {
+            track.stop(); // Ensure local stream is fully stopped
+        });
+        localStream=null;
+    }
+
+    isMatched=false;  // Reset matching state
 }
+
 
 
 
