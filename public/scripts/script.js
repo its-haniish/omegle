@@ -31,18 +31,26 @@ function resetConnection() {
     }
 }
 
-// 🎥 Get user media
+// 🎥 Get user media with permission check
 async function getMedia() {
-    try {
-        localStream=await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-        localVideo.srcObject=localStream;
-        console.log("✅ Local stream initialized.");
+    let permissionGranted=false;
 
-        localStream.getTracks().forEach(track => {
-            console.log(`🎙️ Local ${track.kind} track — enabled: ${track.enabled}, readyState: ${track.readyState}`);
-        });
-    } catch (error) {
-        console.error("❌ Error accessing media devices:", error);
+    while (!permissionGranted) {
+        try {
+            localStream=await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            localVideo.srcObject=localStream;
+            console.log("✅ Local stream initialized.");
+            permissionGranted=true; // User granted access
+
+            localStream.getTracks().forEach(track => {
+                console.log(`🎙️ Local ${track.kind} track — enabled: ${track.enabled}, readyState: ${track.readyState}`);
+            });
+
+        } catch (error) {
+            console.error("❌ Error accessing media devices:", error);
+            alert("⚠️ Please allow camera and microphone access for the chat to work.");
+            await new Promise(resolve => setTimeout(resolve, 3000)); // Wait 3s before retrying
+        }
     }
 }
 
@@ -289,4 +297,6 @@ socket.on("partner_disconnected", () => {
 
 
 // 🟢 Start on page load
-getMedia();
+window.onload=() => {
+    getMedia();
+};
