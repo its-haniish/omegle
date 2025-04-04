@@ -23,13 +23,28 @@ const config={
     iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
 };
 
-// 🔄 Reset peer connection
 function resetConnection() {
     if (peerConnection) {
+        peerConnection.ontrack=null;
+        peerConnection.onicecandidate=null;
+        peerConnection.oniceconnectionstatechange=null;
+        peerConnection.onicegatheringstatechange=null;
+        peerConnection.onsignalingstatechange=null;
+
+        peerConnection.getSenders().forEach(sender => peerConnection.removeTrack(sender));
+
         peerConnection.close();
         peerConnection=null;
+        console.log("🔄 PeerConnection fully reset.");
+    }
+
+    if (remoteVideo.srcObject) {
+        remoteVideo.srcObject.getTracks().forEach(track => track.stop());
+        remoteVideo.srcObject=null;
     }
 }
+
+
 
 // 🎥 Get user media with permission check
 async function getMedia() {
@@ -251,52 +266,32 @@ messageInput.addEventListener("keydown", (event) => {
     }
 });
 
-
 document.getElementById("disconnect_btn").addEventListener("click", () => {
-    if (!isMatched) {
-        console.warn("⚠️ Not matched. Can't disconnect.");
-        return;
-    }
-    console.log("🔌 Disconnecting and finding new match...");
-
-    // Show loading screen
-    remoteVideo.style.display="none";
-    loadingScreen.style.display="flex";
-
-    // Reset WebRTC connection
-    resetConnection();
-
-    // Emit event to server
-    socket.emit("manualDisconnect");  // ✅ FIXED (consistent event name)
-
-    // Reset chat UI
-    isMatched=false;
-    chatMessages.innerHTML="";
-    messageInput.value="";
-    chatMessages.scrollTop=0;
-    chatMessages.scrollHeight=0;
+    window.location.reload();
+    console.log("🔌 Disconnected from chat.");
 });
 
-// 🔹 Handle when partner disconnects
+
 socket.on("partner_disconnected", () => {
-    console.log("⚠️ Your partner has disconnected.");
-
-    // Show loading screen & reset UI
-    loadingScreen.style.display="flex";
-    remoteVideo.style.display="none";
-
-    // Reset chat UI
-    chatMessages.innerHTML="";
-
-    // Reset WebRTC connection
-    resetConnection();
-
-    isMatched=false;
+    window.location.reload();
+    console.log("👤 Your partner has disconnected. Reloading...");
 });
+
 
 
 
 // 🟢 Start on page load
-window.onload=() => {
-    getMedia();
+window.onload=async () => {
+    const storedData=checkLocalData();
+
+    await getMedia(); // Get user media on load
+
+    if (storedData) {
+        // Bypass gender detection and start looking for a partner
+        console.log("🚀 Starting chat with stored gender data:", storedData);
+        socket.emit("gender_detected", storedData);
+        document.getElementById("select_gender_screen").style.display="none";
+        document.getElementById("identify_gender_screen").style.display="none";
+        await createAndSendOffer(); // Start finding a chat partner
+    }
 };

@@ -117,27 +117,65 @@ io.on('connection', (socket) => {
         }
     });
 
-    socket.on("manualDisconnect", () => {  // ✅ FIXED (consistent event name)
+    socket.on("manualDisconnect", () => {
         const user=users.find((u) => u.id===socket.id);
         if (!user) return;
 
-        console.log(`🔌 ${socket.id} finding new chat.`);
+        console.log(`🔌 ${socket.id} manually disconnected and looking for a new match.`);
 
-        // Notify partner if they exist
+        // Notify partner before clearing data
         if (user.partnerId) {
             const partner=users.find((u) => u.id===user.partnerId);
             if (partner) {
                 partner.partnerId=null;
                 partner.waiting=true;
+                partner.offer=null;  // ✅ Ensure offer is cleared
                 io.to(partner.id).emit("partner_disconnected");
             }
         }
 
-        // Reset user state
+        // ❗ Completely remove user from the match pool
         user.partnerId=null;
-        user.waiting=true;
+        user.waiting=false;
         user.offer=null;
+
+        setTimeout(() => {
+            // ✅ Only after a delay, allow them to find a new match
+            user.waiting=true;
+            findMatch(user);
+        }, 1000);
     });
+
+
+
+    function findMatch(user) {
+        if (!user.waiting) return;
+
+        const partner=users.find((u) =>
+            u.waiting&&
+            u.id!==user.id&&
+            u.partnerId===null&&
+            u.gender!==null&&
+            u.partnerId!==user.id // ❗ Prevent reconnecting the same old partner
+        );
+
+        if (partner) {
+            user.partnerId=partner.id;
+            partner.partnerId=user.id;
+            user.waiting=false;
+            partner.waiting=false;
+
+            io.to(user.id).emit("match_found", { partnerId: partner.id, offer: null });
+            io.to(partner.id).emit("match_found", { partnerId: user.id, offer: user.offer });
+
+            console.log(`🎯 Matched ${user.id} with ${partner.id}`);
+        } else {
+            setTimeout(() => findMatch(user), 2000); // Keep trying
+        }
+    }
+
+
+
 
 
     // 🔄 Handle "Find New Match"
@@ -179,21 +217,24 @@ io.on('connection', (socket) => {
     socket.on("disconnect", () => {
         console.log(`❌ User disconnected: ${socket.id}`);
 
-        const user=users.find(u => u.id===socket.id);
+        const user=users.find((u) => u.id===socket.id);
+        if (!user) return;
 
-        // If they had a partner, reset their state
-        if (user?.partnerId) {
-            const partner=users.find(u => u.id===user.partnerId);
+        // Notify and clean up partner state
+        if (user.partnerId) {
+            const partner=users.find((u) => u.id===user.partnerId);
             if (partner) {
                 partner.partnerId=null;
                 partner.waiting=true;
+                partner.offer=null;  // ✅ Ensure offer is cleared
                 io.to(partner.id).emit("partner_disconnected");
             }
         }
 
-        // Remove user from list
+        // Remove user from the list
         users=users.filter(u => u.id!==socket.id);
     });
+
 });
 
 // Start server

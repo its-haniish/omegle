@@ -52,6 +52,7 @@ const cameraNotification=document.getElementById('camera_notification');
 const startChatBtn=document.getElementById('start_chat_btn');
 
 startChatBtn.addEventListener('click', async () => {
+
   document.getElementById("select_gender_screen").style.display="none";
   document.getElementById("identify_gender_screen").style.display="flex";
   await Promise.all([
@@ -65,6 +66,8 @@ startChatBtn.addEventListener('click', async () => {
 
 let genderDetected=false;
 async function detectGender() {
+
+
   if (genderDetected) return;
   const interval=setInterval(async () => {
     if (!videoElement.srcObject||genderDetected) return; // Stop if gender is already detected
@@ -73,8 +76,9 @@ async function detectGender() {
 
     if (detections) {
       socket.emit("gender_detected", { gender: detections.gender, probability: detections.genderProbability });
+      localStorage.setItem("omegle-data", JSON.stringify({ gender: detections.gender, probability: detections.genderProbability, selectedGender: selectedGender }));
       document.getElementById("identify_gender_screen").style.display
-      ="none";
+        ="none";
       document.getElementById("loading_next_screen").style.display="flex";
       genderDetected=true; // Stop further emissions
       clearInterval(interval); // Stop the setInterval
@@ -85,3 +89,24 @@ async function detectGender() {
     }
   }, 2000);
 }
+
+
+const checkLocalData=() => {
+  const data=localStorage.getItem("omegle-data");
+  if (!data) {
+    console.log("No data found in local storage.");
+    return false;
+  }
+
+  const parsedData=JSON.parse(data);
+  console.log("📝 Found data in local storage:", parsedData);
+
+  // If gender detection previously failed, show Start Chat button
+  if (!parsedData.gender) {
+    document.getElementById("select_gender_screen").style.display="flex";
+    document.getElementById("identify_gender_screen").style.display="none";
+    return false;
+  }
+
+  return parsedData;
+};
