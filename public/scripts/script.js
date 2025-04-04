@@ -112,15 +112,35 @@ function setupPeerConnection() {
 
         remoteVideo.onloadedmetadata=() => {
             console.log("✅ Metadata loaded. Trying to play remote video...");
-            loadingScreen.style.display="none"
+            loadingScreen.style.display="none";
             remoteVideo.style.display="block";
+
             remoteVideo.play().catch(err => {
-                remoteVideo.style.display="none"
-                loadingScreen.style.display="flex"
                 console.error("❌ Video play failed:", err);
+                retryRemoteVideo();
             });
+
+            // Check if video is actually playing
+            setTimeout(() => {
+                if (remoteVideo.readyState<3) {  // 3 = "HAVE_FUTURE_DATA"
+                    console.warn("⚠️ Remote video is not playing. Reloading...");
+                    retryRemoteVideo();
+                }
+            }, 3000); // Wait 3 seconds before checking
         };
     };
+
+    // Function to retry video play or reload
+    function retryRemoteVideo() {
+        remoteVideo.srcObject=null;
+        remoteVideo.style.display="none";
+        loadingScreen.style.display="flex";
+
+        setTimeout(() => {
+            window.location.reload();
+        }, 1000); // Reload after 1 second
+    }
+
 }
 
 // ✉️ Create and send offer
@@ -295,6 +315,9 @@ socket.on("partner_disconnected", () => {
 // 🟢 Start on page load
 window.onload=async () => {
     const storedData=checkLocalData();
+    document.getElementById("select_gender_screen").style.display="none";
+    document.getElementById("identify_gender_screen").style.display="none";
+    loadingScreen.style.display="flex"
 
     await getMedia(); // Get user media on load
 
@@ -302,8 +325,9 @@ window.onload=async () => {
         // Bypass gender detection and start looking for a partner
         console.log("🚀 Starting chat with stored gender data:", storedData);
         socket.emit("gender_detected", storedData);
-        document.getElementById("select_gender_screen").style.display="none";
-        document.getElementById("identify_gender_screen").style.display="none";
         await createAndSendOffer(); // Start finding a chat partner
+    } else {
+        loadingScreen.style.display="none";
+        document.getElementById("select_gender_screen").style.display="block";
     }
 };

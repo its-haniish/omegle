@@ -12,6 +12,9 @@
     width: 100%;
     gap: 50px;
 }
+#select_gender_screen{
+    display: none;
+}
 .gender_btn{
     margin: 30px;
     display: flex;
