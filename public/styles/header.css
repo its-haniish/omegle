@@ -67,3 +67,23 @@
     max-width: 100%;
     max-height: 100%;
   }
+  @media (max-width: 768px) {
+
+    #head_container {
+      flex-direction: row;
+      align-items: flex-end;
+      justify-content: space-between;
+      padding: 0 2vw;
+    }
+
+    #head_container h1 {
+      font-size: 1.5rem;
+    }
+    #head_container h2 {
+      font-size: 0.8rem;
+      margin-top: 0;
+    }
+ 
+  }
+
+  

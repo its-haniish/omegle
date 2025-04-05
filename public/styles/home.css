@@ -366,3 +366,115 @@
 #send_btn:hover {
     background: #0056b3;
 }
+
+
+@media (max-width: 768px) {
+
+
+
+    #video_sections {
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin-top: 110px;
+    }
+  
+    #video_sections section {
+      width: 100%;
+      height: auto;
+      aspect-ratio: 1 / 1; /* Makes each section a square */
+      border: none;
+    }
+
+  
+    #video, #video_random {
+      width: 99vw;
+      height: 40vh;
+      aspect-ratio: 1 / 1; /* Force video to be square */
+      object-fit: cover;
+    }
+    #random_video_section{
+        margin-top: -105px;
+    }
+  
+    #select_section h2 {
+      font-size: 16px;
+      margin-top: 10px;
+    }
+  
+    #select_gender_container {
+      flex-direction: column;
+      gap: 20px;
+    }
+  
+    .gender_btn img {
+      width: 80px;
+    }
+  
+    #start_chat_btn {
+      font-size: 14px;
+      padding: 8px 16px;
+    }
+  
+    #identify_gender_screen img {
+      width: 150px;
+    }
+  
+    #loading_next_screen img {
+      width: 40px;
+    }
+  
+    #chat_and_btns_section {
+      flex-direction: column;
+      height: auto;
+    }
+  
+    #btns_section {
+      width: 100%;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      height: auto;
+      margin-top: -45px;
+    }
+  
+
+    #btns_section button {
+      width: 100px;
+      height: 60px;
+      font-size: 14px;
+      gap: 0px
+    }
+    #btns_section button i {
+      font-size: 20px;
+    }
+    #btns_section button span {
+        font-size: 12px;
+    }
+  
+    #chat_section {
+      width: 100%;
+      height: 20vh;
+      margin-top: 10px;
+    }
+  
+    #chat_container {
+      width: 100%;
+      height: 100%;
+    }
+  
+    .message {
+      font-size: 12px;
+      max-width: 90%;
+    }
+  
+    #chat_input {
+      font-size: 12px;
+    }
+  
+    #send_btn {
+      font-size: 12px;
+      padding: 8px 12px;
+    }
+  }
+  
