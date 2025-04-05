@@ -386,6 +386,27 @@
       border: none;
     }
 
+    #select_gender_screen{
+        width: 80vw;
+        height: 10vh;
+        margin-top: -160px;
+    }
+
+
+    #select_gender_container button{
+        margin-top: -2px;
+        width: 40vw;
+        height: 15vh;
+        min-width: 20vw;
+    }
+    
+
+    #start_chat_btn {
+      font-size: 14px;
+      padding: 8px 16px;
+      margin-top: -25px;
+    }
+
   
     #video, #video_random {
       width: 99vw;
@@ -402,22 +423,13 @@
       margin-top: 10px;
     }
   
-    #select_gender_container {
-      flex-direction: column;
-      gap: 20px;
-    }
-  
     .gender_btn img {
       width: 80px;
     }
   
-    #start_chat_btn {
-      font-size: 14px;
-      padding: 8px 16px;
-    }
   
     #identify_gender_screen img {
-      width: 150px;
+      width: 100px;
     }
   
     #loading_next_screen img {
@@ -438,18 +450,32 @@
       margin-top: -45px;
     }
   
-
+    #btns_section {
+        position: relative;
+        z-index: 10;
+    }
+    
+    #btns_section button {
+        position: relative;
+        z-index: 11;
+    }
+    
     #btns_section button {
       width: 100px;
       height: 60px;
       font-size: 14px;
-      gap: 0px
+      gap: 0px;
+      -webkit-tap-highlight-color: transparent;
     }
     #btns_section button i {
       font-size: 20px;
     }
     #btns_section button span {
         font-size: 12px;
+    }
+
+    #btns_section button:hover {
+      border: 3px solid black;
     }
   
     #chat_section {
