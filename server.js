@@ -42,7 +42,6 @@ io.on('connection', (socket) => {
             user.gender=data.gender;
             user.genderToPair=data.selectedGender;
             console.log(`🧠 Gender updated for ${socket.id}: ${data.gender}`);
-            console.log(`Looking for ${data.genderToPair} partners`);
 
         }
     });
@@ -61,17 +60,13 @@ io.on('connection', (socket) => {
 
         user.offer=data.offer;
 
+        // Find a suitable partner
         const partner=users.find(u =>
             u.waiting&&
             u.id!==socket.id&&
             u.partnerId===null&&
-            u.gender!==null&&
-            user.gender!==null&&
-            user.genderToPair===u.gender&&      // ✅ You want this gender
-            u.genderToPair===user.gender         // ✅ They want your gender
+            u.gender!==null
         );
-
-
 
         if (partner) {
             // Pair users
@@ -165,12 +160,9 @@ io.on('connection', (socket) => {
             u.id!==user.id&&
             u.partnerId===null&&
             u.gender!==null&&
-            user.gender!==null&&
-            u.genderToPair===user.gender&&     // ✅ They want you
-            user.genderToPair===u.gender        // ✅ You want them
+            u.partnerId!==user.id&& // ❗ Prevent reconnecting the same old partner
+            u.genderToPair===user.gender // Ensure selected genders match
         );
-
-
 
         if (partner) {
             user.partnerId=partner.id;
