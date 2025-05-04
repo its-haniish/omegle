@@ -321,18 +321,18 @@
 
 /* Your messages (left-aligned, blue) */
 .your-message {
-    align-self: flex-start;
+    align-self: flex-end;
     background: #007bff;
     color: white;
-    border-top-left-radius: 2px;
+    border-top-right-radius: 2px;
 }
 
 /* Stranger messages (right-aligned, gray) */
 .stranger-message {
-    align-self: flex-end;
+    align-self: flex-start;
     background: #e0e0e0;
     color: black;
-    border-top-right-radius: 2px;
+    border-top-left-radius: 2px;
 }
 
 #chat_input_container {
@@ -407,6 +407,7 @@
       margin-top: -25px;
     }
 
+    
   
     #video, #video_random {
       width: 99vw;
@@ -453,6 +454,9 @@
     #btns_section {
         position: relative;
         z-index: 10;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
     }
     
     #btns_section button {
@@ -461,9 +465,10 @@
     }
     
     #btns_section button {
-      width: 100px;
+      width: 80px;
       height: 60px;
       font-size: 14px;
+      margin-top: -40px;
       gap: 0px;
       -webkit-tap-highlight-color: transparent;
     }
@@ -504,3 +509,57 @@
     }
   }
   
+/* gpt generated */
+#btns_section {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+#btns_section button {
+    position: relative;
+    z-index: 11;
+    font-size: 14px;
+    font-weight: 600; /* Bold text for a more modern feel */
+    background-color: #3498db; /* Modern blue */
+    color: #fff;
+    border: none;
+    border-radius: 10px; /* Rounded corners */
+    cursor: pointer;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+    -webkit-tap-highlight-color: transparent;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+}
+
+#btns_section button i {
+    font-size: 20px;
+    margin-right: 10px; /* Spacing between icon and text */
+}
+
+#btns_section button span {
+    font-size: 12px;
+    font-weight: 500; /* Slightly lighter text */
+}
+
+#btns_section button:hover {
+    background-color: #34495e; /* Slightly lighter gray on hover */
+    transform: translateY(-4px); /* Lifting effect on hover */
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15); /* More prominent shadow on hover */
+}
+
+#btns_section button:active {
+    transform: translateY(2px); /* Button presses down when clicked */
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1); /* Reduced shadow when active */
+}
+
+#btns_section button:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.6); /* Outline on focus */
+}

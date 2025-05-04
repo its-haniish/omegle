@@ -1,7 +1,7 @@
 require('dotenv').config();
 const express=require('express');
 const app=express();
-const PORT=process.env.PORT || 8085;
+const PORT=process.env.PORT||8085;
 const path=require('path');
 const http=require('http');
 const { Server }=require('socket.io');
@@ -32,6 +32,7 @@ io.on('connection', (socket) => {
         waiting: true,
         partnerId: null,
         offer: null,
+        genderToPair: null,
     });
 
     // Receive gender info after face-api.js detection
@@ -39,13 +40,17 @@ io.on('connection', (socket) => {
         const user=users.find(u => u.id===socket.id);
         if (user) {
             user.gender=data.gender;
+            user.genderToPair=data.selectedGender;
             console.log(`🧠 Gender updated for ${socket.id}: ${data.gender}`);
+            console.log(`Looking for ${data.genderToPair} partners`);
+
         }
     });
 
     // User ready to chat, sends their offer
     socket.on("join_chat", (data) => {
         const user=users.find(u => u.id===socket.id);
+
         if (!user||!data?.offer) return;
 
         // Exit early if already matched
@@ -56,13 +61,17 @@ io.on('connection', (socket) => {
 
         user.offer=data.offer;
 
-        // Find a suitable partner
         const partner=users.find(u =>
             u.waiting&&
             u.id!==socket.id&&
             u.partnerId===null&&
-            u.gender!==null
+            u.gender!==null&&
+            user.gender!==null&&
+            user.genderToPair===u.gender&&      // ✅ You want this gender
+            u.genderToPair===user.gender         // ✅ They want your gender
         );
+
+
 
         if (partner) {
             // Pair users
@@ -156,8 +165,12 @@ io.on('connection', (socket) => {
             u.id!==user.id&&
             u.partnerId===null&&
             u.gender!==null&&
-            u.partnerId!==user.id // ❗ Prevent reconnecting the same old partner
+            user.gender!==null&&
+            u.genderToPair===user.gender&&     // ✅ They want you
+            user.genderToPair===u.gender        // ✅ You want them
         );
+
+
 
         if (partner) {
             user.partnerId=partner.id;

@@ -3,6 +3,11 @@ const maleGenderBtn=document.getElementById("male_gender_btn");
 const femaleGenderImg=document.getElementById("female_gender_img");
 const femaleGenderBtn=document.getElementById("female_gender_btn");
 
+document.getElementById("reset_btn").addEventListener("click", () => {
+  localStorage.removeItem("omegle-data");
+  window.location.reload();
+});
+
 
 let selectedGender="male";
 let cameraStream=null; // Store the camera stream
@@ -75,8 +80,8 @@ async function detectGender() {
     const detections=await faceapi.detectSingleFace(videoElement, new faceapi.TinyFaceDetectorOptions()).withAgeAndGender();
 
     if (detections) {
-      socket.emit("gender_detected", { gender: detections.gender, probability: detections.genderProbability });
-      localStorage.setItem("omegle-data", JSON.stringify({ gender: detections.gender, probability: detections.genderProbability, selectedGender: selectedGender }));
+      socket.emit("gender_detected", { gender: detections.gender, selectedGender, probability: detections.genderProbability });
+      localStorage.setItem("omegle-data", JSON.stringify({ selectedGender, gender: detections.gender, probability: detections.genderProbability, selectedGender: selectedGender }));
       document.getElementById("identify_gender_screen").style.display
         ="none";
       document.getElementById("loading_next_screen").style.display="flex";
@@ -99,6 +104,12 @@ const checkLocalData=() => {
   }
 
   const parsedData=JSON.parse(data);
+  if (parsedData.selectedGender===undefined||selectedGender===null) {
+    console.log("No selected");
+    localStorage.removeItem("omegle-data");
+    window.location.reload();
+    return false;
+  }
   console.log("📝 Found data in local storage:", parsedData);
   loadingScreen.style.display="flex"
 
